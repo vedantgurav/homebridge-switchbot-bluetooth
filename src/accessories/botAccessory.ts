@@ -31,9 +31,13 @@ export class BotAccessory implements AccessoryPlugin {
 		this.switchBotClient = new SwitchBotClient(log);
 		this.metadataClient = new MetadataClient(log);
 
-		this.switchService = new this.hap.Service.Switch(name);
+		this.switchService = new this.hap.Service.LockMechanism(name);
 		this.switchService
-			.getCharacteristic(hap.Characteristic.On)
+			.getCharacteristic(hap.Characteristic.LockCurrentState)
+			.on(CharacteristicEventTypes.GET, this.handleGetSwitchValue);
+
+		this.switchService
+			.getCharacteristic(hap.Characteristic.LockTargetState)
 			.on(CharacteristicEventTypes.GET, this.handleGetSwitchValue)
 			.on(CharacteristicEventTypes.SET, this.handleSetSwitchValue);
 
@@ -78,7 +82,7 @@ export class BotAccessory implements AccessoryPlugin {
 		this.log.info(
 			`Current power state of the switch is: ${this.isSwitchOn ? 'ON' : 'OFF'}`,
 		);
-		callback(HAPStatus.SUCCESS, this.isSwitchOn);
+		callback(HAPStatus.SUCCESS, !this.isSwitchOn);
 	};
 
 	private SetPowerStateAfterDelay = (
